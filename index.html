@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <!-- ═══════════════════════════════════════════
+       给爬虫/风控机器人看的"伪装"内容
+       微信/QQ/Facebook 爬虫不执行 JS，只解析这里
+       ═══════════════════════════════════════════ -->
+  <title>资讯中心 — 全球商业信息服务平台</title>
+  <meta name="description" content="专注提供优质商业资讯与行业信息，为您呈现最新企业动态与全球市场趋势，助力商业决策。">
+  <meta name="keywords" content="商业资讯,行业信息,企业动态,市场分析,全球商业">
+  <meta name="author" content="InfoHub Global">
+  <meta name="robots" content="index, follow">
+
+  <!-- Open Graph — Facebook / WhatsApp / Telegram 爬虫读取这里生成预览卡 -->
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="2025全球商业趋势洞察报告">
+  <meta property="og:description" content="深度解析全球市场格局变化，涵盖科技、金融、消费等核心领域，助力企业把握先机。">
+  <meta property="og:image" content="https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=1200&h=630&fit=crop&auto=format">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:site_name" content="InfoHub 全球资讯">
+  <meta property="og:locale" content="zh_CN">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="2025全球商业趋势洞察报告">
+  <meta name="twitter:description" content="深度解析全球市场格局变化，涵盖科技、金融、消费等核心领域。">
+  <meta name="twitter:image" content="https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=1200&h=630&fit=crop&auto=format">
+
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg:       #080818;
+      --card:     #11112b;
+      --border:   rgba(100,108,255,0.18);
+      --primary:  #6366f1;
+      --purple:   #a855f7;
+      --text:     #e2e8f0;
+      --muted:    #8892a4;
+      --success:  #22d3a5;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Segoe UI', sans-serif;
+    }
+
+    /* ── 全屏居中容器 ── */
+    .screen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    /* ══════════════════
+       状态1：跳转中
+       ══════════════════ */
+    #s-loading .inner {
+      text-align: center;
+    }
+
+    .spinner {
+      width: 72px; height: 72px;
+      border: 3px solid rgba(100,108,255,0.15);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+      margin: 0 auto 28px;
+      position: relative;
+    }
+    .spinner::after {
+      content: '';
+      position: absolute;
+      inset: 6px;
+      border: 2px solid transparent;
+      border-top-color: var(--purple);
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite reverse;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .load-title {
+      font-size: 20px;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--primary), var(--purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+    .load-sub {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
+
+    .progress-track {
+      width: 220px;
+      height: 3px;
+      background: rgba(100,108,255,0.12);
+      border-radius: 99px;
+      margin: 0 auto;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), var(--purple));
+      border-radius: 99px;
+      animation: prog 2.5s ease-out forwards;
+    }
+    @keyframes prog { from { width:0% } to { width:88% } }
+
+    /* ══════════════════
+       状态2：微信引导
+       ══════════════════ */
+    #s-wechat { display: none; }
+
+    .wechat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 36px 28px;
+      max-width: 380px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+      animation: slideUp 0.4s ease;
+    }
+    @keyframes slideUp {
+      from { opacity:0; transform:translateY(20px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    .wx-icon {
+      width: 68px; height: 68px;
+      background: linear-gradient(135deg, #1aad19, #2dc100);
+      border-radius: 18px;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 20px;
+      font-size: 34px;
+      box-shadow: 0 8px 24px rgba(26,173,25,0.35);
+    }
+
+    .wx-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .wx-sub {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.65;
+      margin-bottom: 24px;
+    }
+
+    .step-list {
+      text-align: left;
+      background: rgba(100,108,255,0.06);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+    .step-n {
+      width: 26px; height: 26px;
+      background: linear-gradient(135deg, var(--primary), var(--purple));
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    /* 顶部箭头动画 */
+    .arrow-hint {
+      position: fixed;
+      top: 8px; right: 16px;
+      text-align: center;
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+    .arrow-hint .arrow { font-size: 32px; }
+    .arrow-hint .hint-txt {
+      font-size: 11px;
+      color: var(--muted);
+      display: block;
+      margin-top: 2px;
+    }
+    @keyframes pulse {
+      0%,100% { transform: translateY(0); }
+      50%      { transform: translateY(6px); }
+    }
+
+    /* ══════════════════
+       状态3：iframe
+       ══════════════════ */
+    #s-frame {
+      display: none;
+      position: fixed;
+      inset: 0;
+      border: none;
+      z-index: 999;
+      width: 100%; height: 100%;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══ 状态1：跳转中 ══ -->
+<div id="s-loading" class="screen">
+  <div class="inner">
+    <div class="spinner"></div>
+    <div class="load-title">正在为您跳转</div>
+    <div class="load-sub">即将前往目标页面，请稍候…</div>
+    <div class="progress-track">
+      <div class="progress-fill"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 状态2：微信内提示 ══ -->
+<div id="s-wechat" class="screen">
+  <div class="arrow-hint">
+    <div class="arrow">↑</div>
+    <span class="hint-txt">在此处点击</span>
+  </div>
+  <div class="wechat-card">
+    <div class="wx-icon">📱</div>
+    <div class="wx-title">需要在浏览器中打开</div>
+    <div class="wx-sub">此链接在微信内受到访问限制，<br>请按以下步骤切换到系统浏览器</div>
+    <div class="step-list">
+      <div class="step">
+        <div class="step-n">1</div>
+        <span>点击右上角 <strong>「···」</strong> 三点菜单</span>
+      </div>
+      <div class="step">
+        <div class="step-n">2</div>
+        <span>选择 <strong>「在浏览器中打开」</strong></span>
+      </div>
+      <div class="step">
+        <div class="step-n">3</div>
+        <span>即可正常访问目标页面 ✓</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 状态3：iframe 内嵌（QQ/支付宝等使用）══ -->
+<iframe id="s-frame" allowfullscreen allow="fullscreen"></iframe>
+
+<!-- ══════════════════════════════════════════
+     核心跳转引擎
+     爬虫不执行这段代码，只有真实用户才会执行
+     ══════════════════════════════════════════ -->
+<script>
+(function () {
+  'use strict';
+
+  var ua = navigator.userAgent || '';
+
+  // ── 平台检测 ──
+  var isWechat  = /MicroMessenger/i.test(ua);
+  var isQQ      = /\bQQ\//i.test(ua) && !isWechat;
+  var isAlipay  = /AlipayClient/i.test(ua);
+  var isWeibo   = /Weibo/i.test(ua);
+  var isDingTalk= /DingTalk/i.test(ua);
+  var isTikTok  = /musical_ly|TikTok/i.test(ua);
+  var isFB      = /FB_IAB|FBAN|FBDV/i.test(ua);        // Facebook App 内嵌
+  var isLINE    = /Line\//i.test(ua);
+  var isInApp   = isWechat || isQQ || isAlipay || isWeibo
+                  || isDingTalk || isTikTok || isFB || isLINE;
+
+  // ── 解析目标 URL ──
+  var params  = new URLSearchParams(location.search);
+  var encoded = params.get('u');
+
+  if (!encoded) return;  // 无参数，保持加载中状态
+
+  var target;
+  try {
+    target = decodeURIComponent(atob(encoded.replace(/-/g,'+').replace(/_/g,'/')));
+  } catch (e) {
+    try { target = decodeURIComponent(encoded); }
+    catch (e2) { target = encoded; }
+  }
+
+  // 校验为合法 URL
+  if (!/^https?:\/\//i.test(target)) return;
+
+  // ── 根据平台执行不同策略 ──
+
+  if (isWechat) {
+    // 微信内：显示"在浏览器中打开"引导
+    document.getElementById('s-loading').style.display = 'none';
+    document.getElementById('s-wechat').style.display  = 'flex';
+
+    // 兼容部分可以直接跳的微信版本（可选，某些场景下有效）
+    // setTimeout(function () { location.href = target; }, 800);
+
+  } else if (isQQ || isAlipay || isWeibo || isDingTalk) {
+    // QQ/支付宝/微博 内：iframe 内嵌展示（避免跳转警告）
+    var frame = document.getElementById('s-frame');
+    frame.src = target;
+    frame.style.display = 'block';
+    document.getElementById('s-loading').style.display = 'none';
+
+    // iframe 加载失败时降级为直接跳转
+    frame.addEventListener('error', function () { location.replace(target); });
+
+  } else {
+    // 普通浏览器（含 Facebook App 内嵌 WebView）：直接跳转
+    location.replace(target);
+  }
+
+})();
+</script>
+
+</body>
+</html>
