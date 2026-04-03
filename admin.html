@@ -474,8 +474,19 @@
 var CFG_KEY  = 'relay_config';
 var HIST_KEY = 'relay_history';
 
+// 默认配置（已预填写你的账号信息）
+var DEFAULT_CFG = {
+  ghUser:    'pwaw2a',
+  ghRepo:    'go',
+  workerUrl: 'https://fanghong.hdvfyhvz792.workers.dev'
+};
+
 function getCfg() {
-  try { return JSON.parse(localStorage.getItem(CFG_KEY)) || {}; } catch(e) { return {}; }
+  try {
+    var saved = JSON.parse(localStorage.getItem(CFG_KEY)) || {};
+    // 合并默认值，本地保存的优先
+    return Object.assign({}, DEFAULT_CFG, saved);
+  } catch(e) { return DEFAULT_CFG; }
 }
 function saveCfg(c) { localStorage.setItem(CFG_KEY, JSON.stringify(c)); }
 function getHistory() {
