@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>防红链接生成器 — 管理后台</title>
+  <style>
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+    :root {
+      --bg:      #080818;
+      --panel:   #10102a;
+      --card:    #141430;
+      --border:  rgba(100,108,255,0.18);
+      --primary: #6366f1;
+      --purple:  #a855f7;
+      --green:   #22d3a5;
+      --text:    #e2e8f0;
+      --muted:   #8892a4;
+      --danger:  #f87171;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Segoe UI', sans-serif;
+      min-height: 100vh;
+    }
+
+    /* ── 顶栏 ── */
+    header {
+      background: rgba(16,16,42,0.9);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 17px;
+    }
+    .logo-icon {
+      width: 32px; height: 32px;
+      background: linear-gradient(135deg, var(--primary), var(--purple));
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+    }
+    .badge {
+      background: rgba(100,108,255,0.15);
+      color: var(--primary);
+      border: 1px solid rgba(100,108,255,0.3);
+      border-radius: 6px;
+      padding: 2px 8px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    /* ── 主布局 ── */
+    .layout {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 32px 20px 80px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    @media (max-width: 700px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+
+    /* ── 卡片 ── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 28px;
+    }
+    .card-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card-sub {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 22px;
+    }
+
+    /* ── 表单 ── */
+    .form-group { margin-bottom: 16px; }
+    label {
+      display: block;
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+    input, textarea, select {
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 14px;
+      color: var(--text);
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+      font-family: inherit;
+    }
+    input:focus, textarea:focus, select:focus {
+      border-color: var(--primary);
+      background: rgba(99,102,241,0.06);
+    }
+    textarea { resize: vertical; min-height: 80px; }
+    select option { background: #1a1a3e; }
+
+    /* ── 按钮 ── */
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 11px 20px;
+      border-radius: 10px;
+      border: none;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      width: 100%;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--purple));
+      color: #fff;
+      box-shadow: 0 4px 18px rgba(99,102,241,0.35);
+    }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(99,102,241,0.5); }
+    .btn-primary:active { transform: translateY(0); }
+
+    .btn-copy {
+      background: rgba(34,211,165,0.12);
+      color: var(--green);
+      border: 1px solid rgba(34,211,165,0.25);
+      margin-top: 10px;
+      font-size: 13px;
+      padding: 9px 16px;
+    }
+    .btn-copy:hover { background: rgba(34,211,165,0.2); }
+
+    .btn-sm {
+      width: auto;
+      padding: 6px 14px;
+      font-size: 13px;
+    }
+
+    /* ── 结果框 ── */
+    .result-box {
+      display: none;
+      background: rgba(34,211,165,0.06);
+      border: 1px solid rgba(34,211,165,0.2);
+      border-radius: 12px;
+      padding: 16px;
+      margin-top: 16px;
+    }
+    .result-box.show { display: block; }
+    .result-label {
+      font-size: 12px;
+      color: var(--green);
+      font-weight: 600;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .result-url {
+      font-size: 13px;
+      word-break: break-all;
+      color: var(--text);
+      line-height: 1.5;
+      font-family: 'Menlo', 'Courier New', monospace;
+      background: rgba(0,0,0,0.2);
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+
+    /* ── 平台标签 ── */
+    .platform-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    .ptag {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.03);
+      transition: all 0.15s;
+      user-select: none;
+    }
+    .ptag.active {
+      background: rgba(99,102,241,0.15);
+      border-color: rgba(99,102,241,0.4);
+      color: #a5b4fc;
+    }
+    .ptag input[type=checkbox] { display: none; }
+
+    /* ── 分隔线 ── */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 20px 0;
+    }
+
+    /* ── 设置区（GitHub用户名）── */
+    .settings-bar {
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .settings-bar label { margin: 0; white-space: nowrap; }
+    .settings-bar input {
+      width: 200px;
+      padding: 7px 12px;
+      font-size: 13px;
+    }
+    .settings-bar .hint {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    /* ── Toast ── */
+    #toast {
+      position: fixed;
+      bottom: 28px; left: 50%;
+      transform: translateX(-50%) translateY(60px);
+      background: rgba(34,211,165,0.95);
+      color: #000;
+      font-weight: 600;
+      font-size: 14px;
+      padding: 10px 22px;
+      border-radius: 99px;
+      pointer-events: none;
+      transition: transform 0.3s, opacity 0.3s;
+      opacity: 0;
+      z-index: 999;
+    }
+    #toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    /* ── 历史记录 ── */
+    .history-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 8px;
+    }
+    .history-item .h-icon {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    .h-domestic { background: rgba(26,173,25,0.15); }
+    .h-overseas { background: rgba(99,102,241,0.15); }
+
+    .history-info { flex: 1; min-width: 0; }
+    .history-target {
+      font-size: 13px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--text);
+    }
+    .history-time {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+    .history-actions { display: flex; gap: 6px; }
+    .hi-btn {
+      background: rgba(99,102,241,0.12);
+      color: #a5b4fc;
+      border: none;
+      border-radius: 6px;
+      padding: 5px 10px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .hi-btn:hover { background: rgba(99,102,241,0.22); }
+    .hi-btn.del { background: rgba(248,113,113,0.1); color: var(--danger); }
+    .hi-btn.del:hover { background: rgba(248,113,113,0.2); }
+
+    .empty-hint {
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+      padding: 24px;
+    }
+
+    /* ── 信息卡（说明）── */
+    .info-section {
+      grid-column: 1 / -1;
+    }
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-top: 16px;
+    }
+    @media (max-width: 700px) { .info-grid { grid-template-columns: 1fr; } }
+    .info-item {
+      background: rgba(99,102,241,0.06);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+    }
+    .info-icon { font-size: 22px; margin-bottom: 8px; }
+    .info-name { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+    .info-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+  </style>
+</head>
+<body>
+
+<!-- ── 顶栏 ── -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">🛡️</div>
+    <span>防红链接生成器</span>
+    <span class="badge">v1.0</span>
+  </div>
+  <div style="font-size:13px;color:var(--muted)">海内外多平台防封中台</div>
+</header>
+
+<!-- ── 设置栏（GitHub 用户名 + Worker 地址）── -->
+<div class="settings-bar">
+  <label for="gh-user">GitHub 用户名</label>
+  <input id="gh-user" placeholder="your-github-username" style="width:180px;">
+
+  <label for="gh-repo">仓库名</label>
+  <input id="gh-repo" placeholder="go" style="width:100px;">
+
+  <label for="worker-url">Worker 地址（可选）</label>
+  <input id="worker-url" placeholder="https://xxx.workers.dev" style="width:220px;">
+
+  <span class="hint">⚙️ 设置后自动保存</span>
+</div>
+
+<div class="layout">
+
+  <!-- ══ 左：国内防红（GitHub Pages）══ -->
+  <div class="card">
+    <div class="card-title">🇨🇳 国内防红链接</div>
+    <div class="card-sub">基于 github.io 白名单域名 · 微信 / QQ / 支付宝</div>
+
+    <div class="form-group">
+      <label>目标 URL（要跳转到的真实地址）</label>
+      <input id="dom-url" type="url" placeholder="https://example.com/your-page">
+    </div>
+
+    <button class="btn btn-primary" onclick="genDomestic()">
+      ⚡ 生成国内防红链接
+    </button>
+
+    <div id="dom-result" class="result-box">
+      <div class="result-label">✅ 防红链接已生成</div>
+      <div id="dom-link" class="result-url"></div>
+      <button class="btn btn-copy" onclick="copyResult('dom-link')">📋 一键复制</button>
+    </div>
+  </div>
+
+  <!-- ══ 右：海外防红（Cloudflare Worker）══ -->
+  <div class="card">
+    <div class="card-title">🌍 海外防红链接</div>
+    <div class="card-sub">Cloudflare Worker · Facebook / WhatsApp / Telegram</div>
+
+    <div class="form-group">
+      <label>目标 URL</label>
+      <input id="ovs-url" type="url" placeholder="https://example.com/your-page">
+    </div>
+
+    <div class="form-group">
+      <label>预览卡片标题（平台爬虫看到的）</label>
+      <input id="ovs-title" placeholder="2025全球商业趋势报告">
+    </div>
+
+    <div class="form-group">
+      <label>预览卡片描述</label>
+      <textarea id="ovs-desc" rows="2" placeholder="深度解析全球市场格局，助力企业把握先机…"></textarea>
+    </div>
+
+    <div class="form-group">
+      <label>预览图片 URL（建议 1200×630）</label>
+      <input id="ovs-img" placeholder="https://images.unsplash.com/photo-xxx?w=1200&h=630">
+    </div>
+
+    <button class="btn btn-primary" onclick="genOverseas()">
+      ⚡ 生成海外防红链接
+    </button>
+
+    <div id="ovs-result" class="result-box">
+      <div class="result-label">✅ 防红链接已生成</div>
+      <div id="ovs-link" class="result-url"></div>
+      <button class="btn btn-copy" onclick="copyResult('ovs-link')">📋 一键复制</button>
+    </div>
+  </div>
+
+  <!-- ══ 历史记录 ══ -->
+  <div class="card" style="grid-column:1/-1;">
+    <div class="card-title">📋 生成历史
+      <button class="btn btn-sm" style="background:rgba(248,113,113,0.1);color:#f87171;border:none;cursor:pointer;margin-left:auto;" onclick="clearHistory()">清空历史</button>
+    </div>
+    <div class="card-sub">最近生成的防红链接（存储在本地，不上传）</div>
+    <div id="history-list"></div>
+  </div>
+
+  <!-- ══ 原理说明 ══ -->
+  <div class="card info-section">
+    <div class="card-title">📖 工作原理</div>
+    <div class="card-sub">三层防封机制，海内外平台全覆盖</div>
+    <div class="info-grid">
+      <div class="info-item">
+        <div class="info-icon">🤖</div>
+        <div class="info-name">爬虫识别</div>
+        <div class="info-desc">通过 User-Agent 识别微信/Facebook/WhatsApp 等平台爬虫，给它们返回"合规"内容。爬虫不执行 JS，无法触发跳转。</div>
+      </div>
+      <div class="info-item">
+        <div class="info-icon">👤</div>
+        <div class="info-name">真人跳转</div>
+        <div class="info-desc">真实用户打开链接后，JS 执行，识别所在平台（微信/QQ/普通浏览器），执行对应策略：iframe 内嵌、引导跳出或直接跳转。</div>
+      </div>
+      <div class="info-item">
+        <div class="info-icon">🔄</div>
+        <div class="info-name">双层入口</div>
+        <div class="info-desc">国内用 github.io（微信白名单）发链接；海外用 Cloudflare Worker 动态生成 OG 预览卡，让 Facebook/WhatsApp 呈现精美预览。</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div id="toast">✅ 已复制到剪贴板</div>
+
+<script>
+// ── 存储 ──
+var CFG_KEY  = 'relay_config';
+var HIST_KEY = 'relay_history';
+
+function getCfg() {
+  try { return JSON.parse(localStorage.getItem(CFG_KEY)) || {}; } catch(e) { return {}; }
+}
+function saveCfg(c) { localStorage.setItem(CFG_KEY, JSON.stringify(c)); }
+function getHistory() {
+  try { return JSON.parse(localStorage.getItem(HIST_KEY)) || []; } catch(e) { return []; }
+}
+function saveHistory(h) { localStorage.setItem(HIST_KEY, JSON.stringify(h)); }
+
+// ── 初始化 ──
+(function init() {
+  var c = getCfg();
+  if (c.ghUser)     document.getElementById('gh-user').value    = c.ghUser;
+  if (c.ghRepo)     document.getElementById('gh-repo').value    = c.ghRepo;
+  if (c.workerUrl)  document.getElementById('worker-url').value = c.workerUrl;
+
+  // 自动保存
+  ['gh-user','gh-repo','worker-url'].forEach(function(id) {
+    document.getElementById(id).addEventListener('input', autoSaveCfg);
+  });
+
+  renderHistory();
+})();
+
+function autoSaveCfg() {
+  saveCfg({
+    ghUser:    document.getElementById('gh-user').value.trim(),
+    ghRepo:    document.getElementById('gh-repo').value.trim() || 'go',
+    workerUrl: document.getElementById('worker-url').value.trim()
+  });
+}
+
+// ── Base64 编码（URL-safe）──
+function b64Encode(str) {
+  return btoa(encodeURIComponent(str))
+    .replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
+}
+
+// ── 生成国内链接（github.io）──
+function genDomestic() {
+  var c   = getCfg();
+  var url = document.getElementById('dom-url').value.trim();
+
+  if (!url) { alert('请输入目标 URL'); return; }
+  if (!/^https?:\/\//i.test(url)) { alert('URL 必须以 http:// 或 https:// 开头'); return; }
+
+  var user = c.ghUser || document.getElementById('gh-user').value.trim();
+  var repo = c.ghRepo || document.getElementById('gh-repo').value.trim() || 'go';
+
+  if (!user) {
+    alert('请先在顶部填写 GitHub 用户名');
+    document.getElementById('gh-user').focus();
+    return;
+  }
+
+  var encoded = b64Encode(url);
+  var link = 'https://' + user + '.github.io/' + repo + '/?u=' + encoded;
+
+  document.getElementById('dom-link').textContent = link;
+  document.getElementById('dom-result').classList.add('show');
+
+  addHistory({ type:'domestic', target:url, link:link });
+}
+
+// ── 生成海外链接（Cloudflare Worker）──
+function genOverseas() {
+  var c       = getCfg();
+  var url     = document.getElementById('ovs-url').value.trim();
+  var title   = document.getElementById('ovs-title').value.trim()  || '最新资讯';
+  var desc    = document.getElementById('ovs-desc').value.trim()   || '点击查看详情';
+  var img     = document.getElementById('ovs-img').value.trim()
+                || 'https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=1200&h=630&fit=crop';
+
+  if (!url) { alert('请输入目标 URL'); return; }
+  if (!/^https?:\/\//i.test(url)) { alert('URL 必须以 http:// 或 https:// 开头'); return; }
+
+  var worker = c.workerUrl || document.getElementById('worker-url').value.trim();
+
+  if (!worker) {
+    // 没有 Worker 地址时，仍然用 github.io 生成（降级）
+    alert('未填写 Worker 地址，将使用 github.io 方案（不含自定义预览卡）');
+    document.getElementById('dom-url').value = url;
+    genDomestic();
+    return;
+  }
+
+  worker = worker.replace(/\/$/, '');
+
+  var params = '?u=' + b64Encode(url)
+             + '&t=' + encodeURIComponent(title)
+             + '&d=' + encodeURIComponent(desc)
+             + '&img=' + encodeURIComponent(img);
+
+  var link = worker + '/r' + params;
+
+  document.getElementById('ovs-link').textContent = link;
+  document.getElementById('ovs-result').classList.add('show');
+
+  addHistory({ type:'overseas', target:url, link:link, title:title });
+}
+
+// ── 复制 ──
+function copyResult(id) {
+  var text = document.getElementById(id).textContent;
+  navigator.clipboard.writeText(text).then(function() { showToast(); });
+}
+
+function showToast() {
+  var t = document.getElementById('toast');
+  t.classList.add('show');
+  setTimeout(function() { t.classList.remove('show'); }, 2000);
+}
+
+// ── 历史记录 ──
+function addHistory(item) {
+  item.time = Date.now();
+  var h = getHistory();
+  h.unshift(item);
+  if (h.length > 30) h = h.slice(0, 30);  // 最多保留 30 条
+  saveHistory(h);
+  renderHistory();
+}
+
+function renderHistory() {
+  var h   = getHistory();
+  var box = document.getElementById('history-list');
+
+  if (!h.length) {
+    box.innerHTML = '<div class="empty-hint">暂无记录，生成链接后会出现在这里</div>';
+    return;
+  }
+
+  box.innerHTML = h.map(function(item, i) {
+    var d = new Date(item.time);
+    var timeStr = d.getMonth()+1 + '/' + d.getDate() + ' '
+                + String(d.getHours()).padStart(2,'0') + ':'
+                + String(d.getMinutes()).padStart(2,'0');
+
+    return '<div class="history-item">'
+      + '<div class="h-icon ' + (item.type === 'domestic' ? 'h-domestic' : 'h-overseas') + '">'
+      + (item.type === 'domestic' ? '🇨🇳' : '🌍') + '</div>'
+      + '<div class="history-info">'
+      + '<div class="history-target">' + escHtml(item.target) + '</div>'
+      + '<div class="history-time">' + timeStr + (item.title ? ' · ' + escHtml(item.title) : '') + '</div>'
+      + '</div>'
+      + '<div class="history-actions">'
+      + '<button class="hi-btn" onclick="copyText(\'' + escAttr(item.link) + '\')">复制</button>'
+      + '<button class="hi-btn del" onclick="delHistory(' + i + ')">删除</button>'
+      + '</div>'
+      + '</div>';
+  }).join('');
+}
+
+function copyText(t) {
+  navigator.clipboard.writeText(t).then(showToast);
+}
+
+function delHistory(i) {
+  var h = getHistory();
+  h.splice(i, 1);
+  saveHistory(h);
+  renderHistory();
+}
+
+function clearHistory() {
+  if (confirm('确定清空所有历史记录？')) {
+    saveHistory([]);
+    renderHistory();
+  }
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function escAttr(s) {
+  return s.replace(/'/g,"\\'").replace(/\n/g,'');
+}
+</script>
+</body>
+</html>
